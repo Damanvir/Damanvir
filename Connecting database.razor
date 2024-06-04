@@ -1,0 +1,56 @@
+﻿using Microsoft.EntityFrameworkCore;
+
+public class MyAppContext : DbContext
+{
+    public DbSet<YourModel> Items { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer("Your Connection String Here");
+    }
+}
+using Microsoft.Extensions.DependencyInjection;
+
+public static class MauiProgram
+{
+    public static MauiApp CreateMauiApp()
+    {
+        var builder = MauiApp.CreateBuilder();
+        builder
+            .UseMauiApp<App>()
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            });
+
+        // Configure DbContext
+        builder.Services.AddDbContext<MyAppContext>(options =>
+            options.UseSqlServer("Your Connection String Here"));
+
+        return builder.Build();
+    }
+}
+            @inject MyAppContext DbContext
+
+            <h3>Data</h3>
+            @if (items == null)
+            {
+                <p><em>Loading...</em></p>
+            }
+            else
+            {
+                foreach (var item in items)
+                {
+                    <p>@item.Name</p>
+                }
+            }
+
+            @code {
+                private List<YourModel> items;
+
+                protected override async Task OnInitializedAsync()
+                {
+                    items = await DbContext.Items.ToListAsync();
+                }
+            }
